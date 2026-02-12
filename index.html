@@ -3,40 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EvilCorp: Dating App (Gemini AI)</title>
+  <title>EvilCorp: Dating App (Gemini AI Full)</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-    /* Базовые стили для красоты */
     :root { --primary: #FF4757; --bg: #f2f4fb; --text: #1f2330; }
     [data-theme="dark"] { --bg: #0f111a; --text: #ffffff; }
-    body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); transition: 0.3s; }
+    body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); transition: 0.3s; overflow-x: hidden; }
     .container { max-width: 500px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; }
     
     /* Карточка профиля */
-    .profile-card { background: #fff; border-radius: 25px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.1); position: relative; height: 70vh; }
+    .profile-card { background: #fff; border-radius: 25px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.1); position: relative; height: 65vh; transition: 0.3s; }
     [data-theme="dark"] .profile-card { background: #1b1f2c; }
     .photo { height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: grid; place-items: center; position: relative; }
     .photo-emoji { font-size: 100px; }
-    .info { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: #white; color: #fff; }
+    .info { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); color: #fff; }
     
-    /* Кнопки действий */
+    /* Кнопки */
     .actions { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
-    .btn-act { width: 60px; height: 60px; border-radius: 50%; border: none; cursor: pointer; font-size: 24px; transition: 0.2s; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    .btn-act { width: 65px; height: 65px; border-radius: 50%; border: none; cursor: pointer; font-size: 24px; transition: 0.2s; box-shadow: 0 10px 20px rgba(0,0,0,0.1); display: grid; place-items: center; }
     .btn-act:hover { transform: scale(1.1); }
     .btn-like { background: var(--primary); color: #fff; }
-    
-    /* Чат */
+    .btn-skip { background: #fff; color: #333; }
+
+    /* Чат Модалка */
     .modal { position: fixed; inset: 0; background: var(--bg); display: none; flex-direction: column; z-index: 1000; }
     .modal.active { display: flex; }
     .chat-log { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-    .msg { max-width: 80%; padding: 12px; border-radius: 15px; font-size: 14px; }
-    .msg.me { align-self: flex-end; background: var(--primary); color: #fff; }
-    .msg.other { align-self: flex-start; background: #ddd; color: #000; }
-    .chat-input { padding: 20px; display: flex; gap: 10px; border-top: 1px solid #ccc; }
-    .chat-input input { flex: 1; padding: 12px; border-radius: 20px; border: 1px solid #ccc; outline: none; }
+    .msg { max-width: 80%; padding: 12px 16px; border-radius: 20px; font-size: 15px; line-height: 1.4; }
+    .msg.me { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
+    .msg.other { align-self: flex-start; background: #e4e6eb; color: #000; border-bottom-left-radius: 4px; }
+    [data-theme="dark"] .msg.other { background: #3a3b3c; color: #fff; }
+    
+    .chat-input { padding: 15px; display: flex; gap: 10px; border-top: 1px solid rgba(0,0,0,0.1); background: var(--bg); }
+    .chat-input input { flex: 1; padding: 12px 18px; border-radius: 25px; border: 1px solid #ccc; outline: none; font-size: 16px; }
+    .btn-send { background: var(--primary); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; }
 
-    .nav { display: flex; justify-content: space-around; padding: 15px; background: #fff; border-top: 1px solid #eee; position: sticky; bottom: 0; }
+    .nav { display: flex; justify-content: space-around; padding: 15px; background: #fff; border-top: 1px solid #eee; position: sticky; bottom: 0; z-index: 10; }
     [data-theme="dark"] .nav { background: #1b1f2c; border-top-color: #333; }
+    .nav button { background: none; border: none; font-size: 24px; cursor: pointer; opacity: 0.6; }
+    .nav button.active { opacity: 1; transform: scale(1.1); }
+
+    .typing { padding: 5px 20px; font-size: 12px; color: var(--primary); font-style: italic; display: none; }
   </style>
 </head>
 <body>
@@ -57,60 +64,65 @@
           <p id="pBio">Люблю спорт и активный отдых. Давай знакомиться!</p>
         </div>
       </div>
-
       <div class="actions">
-        <button class="btn-act" onclick="nextProfile()">✕</button>
+        <button class="btn-act btn-skip" onclick="nextProfile()">✕</button>
         <button class="btn-act btn-like" onclick="likeProfile()">❤️</button>
       </div>
     </div>
 
     <div id="chatsSection" style="display:none;">
-      <h3>Ваши пары</h3>
+      <h3 style="margin-top:0;">Ваши симпатии</h3>
       <div id="matchesList"></div>
     </div>
 
     <div class="nav">
-      <button onclick="showPage('browse')" style="background:none; border:none; font-size:24px; cursor:pointer;">🔍</button>
-      <button onclick="showPage('chats')" style="background:none; border:none; font-size:24px; cursor:pointer;">💬</button>
+      <button id="navBrowse" class="active" onclick="showPage('browse')">🔍</button>
+      <button id="navChats" onclick="showPage('chats')">💬</button>
     </div>
   </div>
 
   <div class="modal" id="chatModal">
-    <div style="padding: 15px; border-bottom: 1px solid #ccc; display: flex; align-items: center; gap: 10px;">
-      <button onclick="closeChat()" style="background:none; border:none; font-size:20px;">←</button>
-      <strong id="chatName">Чат</strong>
+    <div style="padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px;">
+      <button onclick="closeChat()" style="background:none; border:none; font-size:24px; cursor:pointer;">←</button>
+      <strong id="chatName" style="font-size:18px;">Чат</strong>
     </div>
     <div class="chat-log" id="chatLog"></div>
-    <div id="typing" style="padding: 10px; font-size: 12px; display:none;">печатает...</div>
+    <div id="typing" class="typing">печатает...</div>
     <div class="chat-input">
-      <input type="text" id="chatInput" placeholder="Сообщение...">
-      <button onclick="sendMessage()" style="background:var(--primary); color:white; border:none; padding: 10px 20px; border-radius: 20px;">➤</button>
+      <input type="text" id="chatInput" placeholder="Напишите что-нибудь...">
+      <button class="btn-send" onclick="sendMessage()">➤</button>
     </div>
   </div>
 
   <script>
-    // 1. ТВОЙ КЛЮЧ
+    // --- НАСТРОЙКИ ---
     const GEMINI_API_KEY = 'AIzaSyBDHtROba4Ruz5EHaVZoA9QJRGaAiKsU4Y';
 
     const profiles = [
-      { id: 1, name: 'Тураш Али', age: 23, bio: 'Люблю спорт и активный отдых.', emoji: '🦁' },
-      { id: 2, name: 'Мирас Нуркасым', age: 24, bio: 'Люблю IT и стартапы.', emoji: '😎' },
-      { id: 3, name: 'Айгерим', age: 21, bio: 'Люблю искусство и искренность ✨', emoji: '🌸' },
-      { id: 4, name: 'Жания', age: 20, bio: 'Танцы — это жизнь!☀️', emoji: '💃' }
+      { id: 101, name: 'Тураш Али', age: 23, bio: 'Люблю спорт и активный отдых. Давай знакомиться!', emoji: '🦁' },
+      { id: 102, name: 'Мирас Нуркасым', age: 24, bio: 'Люблю IT и стартапы. Ищу ту самую.', emoji: '😎' },
+      { id: 103, name: 'Айгерим', age: 21, bio: 'Люблю искусство и искренность ✨', emoji: '🌸' },
+      { id: 104, name: 'Жания', age: 20, bio: 'Танцы — это жизнь!☀️', emoji: '💃' },
+      { id: 105, name: 'Данияр', age: 25, bio: 'Путешествия и горы — моя страсть.', emoji: '⛰️' }
     ];
 
     let currentIdx = 0;
-    let matches = [];
+    let matches = JSON.parse(localStorage.getItem('my_matches') || '[]');
+    let chatHistory = JSON.parse(localStorage.getItem('my_chats') || '{}');
     let currentChatProfile = null;
-    let chatHistory = {};
 
+    // --- ЛОГИКА ИНТЕРФЕЙСА ---
     function toggleTheme() {
-      document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+      const isDark = document.body.getAttribute('data-theme') === 'dark';
+      document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
     }
 
     function showPage(page) {
       document.getElementById('browseSection').style.display = page === 'browse' ? 'block' : 'none';
       document.getElementById('chatsSection').style.display = page === 'chats' ? 'block' : 'none';
+      document.getElementById('navBrowse').classList.toggle('active', page === 'browse');
+      document.getElementById('navChats').classList.toggle('active', page === 'chats');
+      if(page === 'chats') renderMatches();
     }
 
     function nextProfile() {
@@ -125,24 +137,25 @@
       const p = profiles[currentIdx];
       if (!matches.find(m => m.id === p.id)) {
         matches.push(p);
-        renderMatches();
+        localStorage.setItem('my_matches', JSON.stringify(matches));
       }
-      alert('Это взаимно! Перейдите в чаты.');
-      nextProfile();
+      alert(`Вы понравились ${p.name}!`);
+      showPage('chats');
     }
 
     function renderMatches() {
       const list = document.getElementById('matchesList');
-      list.innerHTML = '';
+      list.innerHTML = matches.length ? '' : '<p style="text-align:center; opacity:0.5;">Пока никого нет...</p>';
       matches.forEach(m => {
         const div = document.createElement('div');
-        div.style = "padding:15px; background:#fff; margin-bottom:10px; border-radius:15px; cursor:pointer; display:flex; gap:10px; align-items:center; color:#000;";
+        div.style = "padding:15px; background:var(--bg); border:1px solid rgba(0,0,0,0.1); margin-bottom:10px; border-radius:18px; cursor:pointer; display:flex; gap:15px; align-items:center;";
         div.onclick = () => openChat(m);
-        div.innerHTML = `<span style="font-size:24px;">${m.emoji}</span> <b>${m.name}</b>`;
+        div.innerHTML = `<span style="font-size:30px;">${m.emoji}</span> <div><b>${m.name}</b><br><small style="opacity:0.6;">Нажми, чтобы написать</small></div>`;
         list.appendChild(div);
       });
     }
 
+    // --- ЛОГИКА ЧАТА ---
     function openChat(profile) {
       currentChatProfile = profile;
       document.getElementById('chatName').textContent = profile.name;
@@ -171,22 +184,25 @@
     async function sendMessage() {
       const input = document.getElementById('chatInput');
       const text = input.value.trim();
-      if (!text) return;
+      if (!text || !currentChatProfile) return;
 
+      // Моё сообщение
       chatHistory[currentChatProfile.id].push({ me: true, text });
       input.value = '';
       renderMessages();
+      saveData();
 
+      // Ответ AI
       document.getElementById('typing').style.display = 'block';
-
-      // ЗАПРОС К GEMINI
       const reply = await fetchGeminiReply(text, currentChatProfile);
-      
       document.getElementById('typing').style.display = 'none';
+
       chatHistory[currentChatProfile.id].push({ me: false, text: reply });
       renderMessages();
+      saveData();
     }
 
+    // --- РАБОТА С GEMINI API ---
     async function fetchGeminiReply(userText, profile) {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
       
@@ -197,23 +213,43 @@
           body: JSON.stringify({
             contents: [{
               parts: [{
-                text: `Ты девушка по имени ${profile.name}. Твой характер: милая, кокетливая. 
-                       Ответь коротко (1 предложение) на сообщение: "${userText}".`
+                text: `Ты девушка по имени ${profile.name}. Твой характер: кокетливая, общительная. 
+                       Твое био: ${profile.bio}. Ответь коротко и живо на сообщение парня: "${userText}"`
               }]
-            }]
+            }],
+            safetySettings: [
+              { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+              { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+              { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+              { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+            ]
           })
         });
 
         const data = await response.json();
-        return data.candidates[0].content.parts[0].text;
+        
+        // Проверка на наличие кандидатов и контента
+        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+          return data.candidates[0].content.parts[0].text;
+        } else {
+          console.error("Нет ответа от API:", data);
+          return "Я даже не знаю, что на это ответить... 😉";
+        }
       } catch (e) {
-        console.error(e);
-        return "У меня пропал интернет, но ты мне нравишься! 😊";
+        console.error("Ошибка запроса:", e);
+        return "Что-то связь барахлит, напиши еще раз? ❤️";
       }
     }
 
-    // Обработка Enter
+    function saveData() {
+      localStorage.setItem('my_chats', JSON.stringify(chatHistory));
+    }
+
+    // Обработка клавиш
     document.getElementById('chatInput').onkeydown = (e) => { if(e.key === 'Enter') sendMessage(); };
+    
+    // Инициализация при загрузке
+    renderMatches();
   </script>
 </body>
 </html>
