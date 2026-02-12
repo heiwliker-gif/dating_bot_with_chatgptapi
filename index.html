@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EvilCorp Dating AI</title>
+  <title>EvilCorp Dating AI (Gemini Edition)</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -21,8 +21,8 @@
     body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; display: flex; flex-direction: column; height: 100vh; transition: 0.3s; }
     
     .nav { position: fixed; bottom: 0; width: 100%; background: var(--bg); padding: 15px; display: flex; justify-content: space-around; border-top: 1px solid var(--gray); z-index: 100; }
-    .nav-btn { background: none; border: none; font-size: 24px; opacity: 0.5; cursor: pointer; position: relative; }
-    .nav-btn.active { opacity: 1; transform: scale(1.1); }
+    .nav-btn { background: none; border: none; font-size: 24px; opacity: 0.5; cursor: pointer; transition: 0.2s; }
+    .nav-btn.active { opacity: 1; transform: scale(1.1); color: var(--primary); }
     .badge { position: absolute; top: -5px; right: -5px; background: var(--primary); color: #fff; font-size: 10px; padding: 2px 5px; border-radius: 10px; }
 
     .section { display: none; height: 100%; padding: 20px; padding-bottom: 80px; overflow-y: auto; }
@@ -30,53 +30,43 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .stats-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
-    .stat-card { background: var(--gray); padding: 10px 15px; border-radius: 12px; min-width: 80px; text-align: center; }
-    .stat-val { font-weight: 800; font-size: 18px; }
-    .stat-label { font-size: 11px; opacity: 0.7; }
-
-    .photo-card { position: relative; width: 100%; height: 60vh; border-radius: 20px; overflow: hidden; background: #eee; box-shadow: var(--shadow); }
+    
+    .photo-card { position: relative; width: 100%; height: 60vh; border-radius: 20px; overflow: hidden; background: #eee; box-shadow: var(--shadow); transition: transform 0.3s; }
+    .photo-card:active { transform: scale(0.98); }
     #photo { width: 100%; height: 100%; background-size: cover !important; transition: 0.3s; }
     #photoEmoji { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; }
-    .photo-overlay { position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: #fff; padding: 20px; }
-    .dots { display: flex; gap: 5px; margin-bottom: 10px; }
-    .dot { flex: 1; height: 3px; background: rgba(255,255,255,0.5); border-radius: 2px; }
-    .dot.active { background: #fff; }
+    .photo-overlay { position: absolute; bottom: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); color: #fff; padding: 20px; }
     
     .actions { display: flex; justify-content: center; gap: 20px; margin-top: 20px; }
-    .act-btn { width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: 0.2s; }
+    .act-btn { width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 24px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.1); transition: 0.2s; background: #fff; }
+    .act-btn:hover { transform: scale(1.1); }
     .act-btn:active { transform: scale(0.9); }
-    .btn-x { background: #fff; color: #ff4757; }
+    .btn-x { color: #ff4757; }
     .btn-heart { background: #ff4757; color: #fff; }
-    .btn-super { background: #3742fa; color: #fff; }
+    .btn-super { color: #3742fa; }
 
-    .match { display: flex; align-items: center; padding: 10px; background: var(--gray); margin-bottom: 10px; border-radius: 12px; cursor: pointer; }
+    .match { display: flex; align-items: center; padding: 10px; background: var(--gray); margin-bottom: 10px; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+    .match:hover { transform: translateX(5px); }
     .avatar { width: 50px; height: 50px; border-radius: 50%; background: #ddd; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 15px; background-size: cover !important; }
-    .match-info { flex: 1; }
-    .match-name { font-weight: 700; margin: 0; }
-    .match-sub { font-size: 12px; opacity: 0.7; }
-    .compat { background: #2ed573; color: #fff; padding: 2px 6px; border-radius: 6px; font-size: 10px; font-weight: 700; }
-
-    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 200; display: flex; flex-direction: column; transform: translateY(100%); transition: 0.3s; }
+    
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 200; display: flex; flex-direction: column; transform: translateY(100%); transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
     .modal.active { transform: translateY(0); }
     .chat-header { padding: 15px; border-bottom: 1px solid var(--gray); display: flex; align-items: center; gap: 10px; background: var(--bg); }
     .chat-log { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-    .msg { max-width: 75%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; }
+    .msg { max-width: 75%; padding: 10px 14px; border-radius: 18px; font-size: 14px; line-height: 1.4; animation: popIn 0.3s; }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
     .msg.me { align-self: flex-end; background: var(--primary); color: #fff; border-bottom-right-radius: 4px; }
     .msg.other { align-self: flex-start; background: var(--gray); color: var(--text); border-bottom-left-radius: 4px; }
     .chat-input-area { padding: 10px; border-top: 1px solid var(--gray); display: flex; gap: 10px; background: var(--bg); }
-    .chat-input { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid var(--gray); background: var(--gray); color: var(--text); outline: none; }
+    .chat-input { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid var(--gray); background: var(--gray); color: var(--text); outline: none; font-size: 16px; }
     
-    .gift-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .gift { background: var(--gray); padding: 15px; border-radius: 12px; text-align: center; cursor: pointer; }
-    .gift-emoji { font-size: 32px; display: block; margin-bottom: 5px; }
-    .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #333; color: #fff; padding: 10px 20px; border-radius: 30px; display: flex; align-items: center; gap: 10px; z-index: 300; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; }
+    .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: #333; color: #fff; padding: 10px 20px; border-radius: 30px; display: flex; align-items: center; gap: 10px; z-index: 300; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    .online-list { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; }
-    .mini { text-align: center; cursor: pointer; min-width: 60px; }
-    .online-dot { width: 10px; height: 10px; background: #2ed573; border-radius: 50%; position: absolute; bottom: 0; right: 0; border: 2px solid var(--bg); }
-    .typing { font-size: 12px; color: #aaa; margin-left: 15px; margin-bottom: 5px; display: none; }
+    .online-list { display: flex; gap: 15px; overflow-x: auto; margin-bottom: 15px; padding: 5px; scrollbar-width: none; }
+    .mini { text-align: center; cursor: pointer; min-width: 60px; position: relative; }
+    .online-dot { width: 12px; height: 12px; background: #2ed573; border-radius: 50%; position: absolute; bottom: 20px; right: 2px; border: 2px solid var(--bg); }
+    .typing { font-size: 12px; color: #aaa; margin-left: 15px; margin-bottom: 5px; display: none; font-style: italic; }
   </style>
 </head>
 <body>
@@ -91,37 +81,28 @@
     <button class="nav-btn" data-section="matches" onclick="showSection('matches')">
       💬 <span id="unreadBadge" class="badge" style="display:none">0</span>
     </button>
-    <button class="nav-btn" data-section="gifts" onclick="showSection('gifts')">🎁</button>
     <button class="nav-btn" data-section="profile" onclick="showSection('profile')">👤</button>
   </div>
 
   <div id="search" class="section active">
     <div class="header">
-      <div>
-        <h2 style="margin:0;">Discover</h2>
-        <small id="cityDisplay">All Cities</small>
-      </div>
-      <div style="text-align: right;">
-        <span id="starBalance" style="font-weight:800; color:#f1c40f;">1000</span> ⭐
-        <button onclick="toggleTheme()" style="background:none;border:none;cursor:pointer;">🌗</button>
-        <button onclick="toggleLang()" style="background:none;border:none;cursor:pointer;">🌐</button>
-      </div>
+      <h2 style="margin:0;">EvilCorp <span style="color:var(--primary)">AI</span></h2>
+      <div style="cursor: pointer;" onclick="toggleTheme()">🌗</div>
     </div>
+    
     <div id="onlineList" class="online-list"></div>
+
     <div class="photo-card" onclick="nextPhoto()">
       <div id="photo"></div>
       <span id="photoEmoji"></span>
       <div class="photo-overlay">
-        <div id="photoDots" class="dots"></div>
-        <h2 id="pName" style="margin:0;">Name, 20</h2>
-        <div id="pMeta" style="margin-bottom:10px; font-size:14px; opacity:0.8;">City</div>
-        <div style="display:flex; gap:5px; margin-bottom:10px;">
-          <span id="aiScoreSmall" class="compat">98%</span>
-        </div>
-        <p id="pBio" style="font-size:14px; opacity:0.9; margin:0;">Bio text...</p>
+        <h2 id="pName" style="margin:0;">Loading...</h2>
+        <p id="pMeta" style="margin: 5px 0; opacity:0.8;">...</p>
+        <p id="pBio" style="font-size:14px; opacity:0.9; margin:0; line-height: 1.4;">...</p>
         <div id="pTags" style="margin-top:10px; display:flex; gap:5px; flex-wrap:wrap;"></div>
       </div>
     </div>
+
     <div class="actions">
       <button class="act-btn btn-x" onclick="skip()">✕</button>
       <button class="act-btn btn-super" onclick="superLike()">⭐</button>
@@ -130,122 +111,195 @@
   </div>
 
   <div id="matches" class="section">
-    <h2>Matches</h2>
+    <h2>Ваши пары</h2>
     <div id="matchesList"></div>
-    <div id="rtBell" style="position:fixed; top:20px; right:20px;"></div>
-  </div>
-
-  <div id="gifts" class="section">
-    <h2>Gift Shop</h2>
-    <div id="giftsGrid" class="gift-grid"></div>
   </div>
 
   <div id="profile" class="section">
-    <h2>My Profile</h2>
-    <div style="text-align:center; margin:20px 0;">
-      <div id="meAvatar" class="avatar" style="width:100px; height:100px; margin:0 auto; font-size:40px;">👤</div>
-      <h3 id="meName">User</h3>
-      <p id="meCity" style="opacity:0.6;">City</p>
+    <h2>Мой профиль</h2>
+    <div style="text-align:center; margin:30px 0;">
+      <div class="avatar" style="width:100px; height:100px; margin:0 auto; font-size:40px; background: var(--gray);">👤</div>
+      <h3 style="margin-top:10px;">Вы</h3>
     </div>
-    <form id="profileForm" style="display:flex; flex-direction:column; gap:10px;">
-      <input id="inpName" placeholder="Your Name" class="chat-input" style="background:var(--bg); padding:15px;">
-      <input id="inpCity" placeholder="Your City" class="chat-input" style="background:var(--bg); padding:15px;">
-      <button type="submit" class="act-btn btn-heart" style="width:100%; border-radius:12px; font-size:16px;">Save Profile</button>
-    </form>
-    <div class="stats-row" style="margin-top:30px;">
-      <div class="stat-card"><div class="stat-val" id="views">0</div><div class="stat-label">Views</div></div>
-      <div class="stat-card"><div class="stat-val" id="likes">0</div><div class="stat-label">Likes</div></div>
-      <div class="stat-card"><div class="stat-val" id="matchCount">0</div><div class="stat-label">Matches</div></div>
+    <div style="background: var(--gray); padding: 15px; border-radius: 12px; text-align: center;">
+      <p>Баланс звезд: <b id="starBalance">1000</b> ⭐</p>
     </div>
   </div>
 
   <div id="chatModal" class="modal">
     <div class="chat-header">
-      <button onclick="closeModal('chatModal')" style="background:none;border:none;font-size:20px;">✕</button>
-      <div>
-        <div id="chatTitle" style="font-weight:700;">Name</div>
-        <div id="chatSubtitle" style="font-size:12px; opacity:0.6;">Online</div>
+      <button onclick="closeModal('chatModal')" style="background:none;border:none;font-size:24px; cursor:pointer;">✕</button>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div id="chatAvatar" class="avatar" style="width:40px;height:40px;font-size:20px;"></div>
+        <div>
+          <div id="chatTitle" style="font-weight:700;">Name</div>
+          <div id="chatSubtitle" style="font-size:12px; opacity:0.6;">Online</div>
+        </div>
       </div>
     </div>
     <div id="chatLog" class="chat-log"></div>
-    <div id="typingIndicator" class="typing">typing...</div>
+    <div id="typingIndicator" class="typing">печатает...</div>
     <div class="chat-input-area">
-      <input id="chatInput" type="text" placeholder="Type a message..." class="chat-input">
-      <button onclick="sendMessage()" style="background:var(--primary); color:white; border:none; width:40px; height:40px; border-radius:50%;">➤</button>
+      <input id="chatInput" type="text" placeholder="Напиши сообщение..." class="chat-input">
+      <button onclick="sendMessage()" style="background:var(--primary); color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer; font-size:18px;">➤</button>
     </div>
   </div>
 
   <script>
-    // 🔴 ВСТАВЬТЕ ВАШ КЛЮЧ СЮДА:
-    const OPENAI_API_KEY = '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'; 
+    // ==========================================================
+    // 🔴 НАСТРОЙКИ (GEMINI API)
+    // ==========================================================
+    
+    // ВСТАВЬТЕ СЮДА ВАШ КЛЮЧ (начинается на AIza...)
+    const GEMINI_API_KEY = 'AIzaSyBDHtROba4Ruz5EHaVZoA9QJRGaAiKsU4Y'; // <--- СЮДА ПОЛНЫЙ КЛЮЧ
 
-    const i18n = {
-      ru: { toast_like: 'Лайк ❤️', toast_skip: 'Пропуск', toast_match: 'Новый матч! 💘', chat_placeholder: 'Сообщение...' },
-      kz: { toast_like: 'Лайк ❤️', toast_skip: 'Өткізу', toast_match: 'Жаңа матч! 💘', chat_placeholder: 'Хабарлама...' }
-    };
-
-    const photoGradients = ['linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'];
-    const profileDatabase = [
-      { id: 101, name: 'Али', age: 23, city: 'Алматы', emoji: '🦁', image: '', bio: 'AI-dating is here!', interests: ['⚽ Sport', '💻 Tech'], verified: true, online: true, aiScore: 98, photos: [0] },
-      { id: 102, name: 'Айгерим', age: 21, city: 'Астана', emoji: '🌸', image: '', bio: 'Love art and coffee', interests: ['🎨 Art', '☕ Coffee'], verified: true, online: true, aiScore: 95, photos: [1] }
+    // ==========================================================
+    // БАЗА ДАННЫХ
+    // ==========================================================
+    const photoGradients = [
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', 
+      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
     ];
 
-    let allProfiles = [...profileDatabase];
-    let idx = 0; let photoIdx = 0; let starBalance = 1000; let matches = []; let chats = {}; let lang = 'ru'; let currentChatId = null;
+    const profiles = [
+      { id: 1, name: 'Аружан', age: 21, city: 'Алматы', emoji: '🌸', bio: 'Люблю горы и кофе ☕. Ищу того, кто умеет шутить.', interests: ['Кофе', 'Горы', 'Книги'], photos: [0] },
+      { id: 2, name: 'Дина', age: 23, city: 'Астана', emoji: '💃', bio: 'Танцую всю ночь, сплю весь день. Энергия через край! ⚡', interests: ['Танцы', 'Музыка', 'Путешествия'], photos: [1] },
+      { id: 3, name: 'Мадина', age: 20, city: 'Шымкент', emoji: '🎨', bio: 'Художница. Рисую твою душу, а не лицо. 😉', interests: ['Искусство', 'Дизайн', 'Коты'], photos: [2] },
+      { id: 4, name: 'Алина', age: 22, city: 'Алматы', emoji: '🎮', bio: 'Обыграю тебя в CS2. Спорим?', interests: ['Гейминг', 'Кино', 'Пицца'], photos: [0] },
+    ];
 
-    const $ = (sel) => document.querySelector(sel);
-    function t(key) { return i18n[lang][key] || key; }
-    function toast(icon, text) { $('#toastIcon').textContent = icon; $('#toastText').textContent = text; $('#toast').classList.add('show'); setTimeout(() => $('#toast').classList.remove('show'), 2000); }
+    // ==========================================================
+    // ЛОГИКА
+    // ==========================================================
+    let currentProfileIdx = 0;
+    let matches = [];
+    let chats = {};
+    let currentChatId = null;
+    let starBalance = 1000;
+
+    const $ = (s) => document.querySelector(s);
+
+    function init() {
+      renderOnline();
+      displayProfile();
+      
+      // Обработка Enter в чате
+      $('#chatInput').addEventListener('keydown', (e) => {
+        if(e.key === 'Enter') sendMessage();
+      });
+    }
 
     function displayProfile() {
-      const p = allProfiles[idx % allProfiles.length];
-      $('#photo').style.background = photoGradients[p.photos[photoIdx] % photoGradients.length];
+      const p = profiles[currentProfileIdx % profiles.length];
+      $('#photo').style.background = photoGradients[p.photos[0] % photoGradients.length];
       $('#photoEmoji').textContent = p.emoji;
       $('#pName').textContent = `${p.name}, ${p.age}`;
       $('#pMeta').textContent = p.city;
       $('#pBio').textContent = p.bio;
-      $('#aiScoreSmall').textContent = p.aiScore + '%';
+      
+      const tags = $('#pTags'); tags.innerHTML = '';
+      p.interests.forEach(t => {
+        const span = document.createElement('span');
+        span.textContent = t;
+        span.style.background = 'rgba(255,255,255,0.2)';
+        span.style.padding = '4px 10px';
+        span.style.borderRadius = '15px';
+        span.style.fontSize = '12px';
+        tags.appendChild(span);
+      });
     }
 
-    function skip() { idx++; displayProfile(); toast('👋', t('toast_skip')); }
-    function like() { 
-      const p = allProfiles[idx % allProfiles.length];
-      createMatch(p);
-      idx++; displayProfile(); toast('❤️', t('toast_like')); 
+    function skip() {
+      currentProfileIdx++;
+      displayProfile();
+      toast('👎', 'Пропуск');
     }
-    function superLike() { starBalance -= 5; $('#starBalance').textContent = starBalance; like(); }
 
-    function createMatch(p) {
-      if (matches.find(m => m.id === p.id)) return;
-      matches.push(p);
-      chats[p.id] = [{ me: false, text: 'Привет! Рада знакомству 😊' }];
-      renderMatches();
-      toast('💘', t('toast_match'));
+    function like() {
+      const p = profiles[currentProfileIdx % profiles.length];
+      // Шанс матча 50%
+      if (Math.random() > 0.4) {
+        if (!matches.find(m => m.id === p.id)) {
+          matches.push(p);
+          chats[p.id] = [];
+          renderMatches();
+          toast('💘', 'Это МАТЧ!');
+        }
+      } else {
+        toast('❤️', 'Лайк отправлен');
+      }
+      currentProfileIdx++;
+      displayProfile();
+    }
+
+    function superLike() {
+      starBalance -= 100;
+      $('#starBalance').textContent = starBalance;
+      like();
+      toast('⭐', 'Супер-лайк!');
     }
 
     function renderMatches() {
       const list = $('#matchesList'); list.innerHTML = '';
+      if (matches.length === 0) list.innerHTML = '<div style="opacity:0.5; padding:10px;">Пока пусто...</div>';
+      
       matches.forEach(m => {
         const div = document.createElement('div');
         div.className = 'match';
         div.onclick = () => openChat(m.id);
-        div.innerHTML = `<div class="avatar">${m.emoji}</div><div><b>${m.name}</b><br><small>${m.city}</small></div>`;
+        div.innerHTML = `
+          <div class="avatar" style="background:${photoGradients[m.photos[0]]}">${m.emoji}</div>
+          <div><div style="font-weight:700;">${m.name}</div><div style="font-size:12px;opacity:0.7;">${m.city}</div></div>
+        `;
+        list.appendChild(div);
+      });
+      $('#unreadBadge').style.display = matches.length ? 'block' : 'none';
+      $('#unreadBadge').textContent = matches.length;
+    }
+
+    function renderOnline() {
+      const list = $('#onlineList');
+      profiles.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'mini';
+        div.innerHTML = `
+          <div class="avatar" style="width:60px;height:60px;font-size:28px;background:${photoGradients[p.photos[0]]}">${p.emoji}<div class="online-dot"></div></div>
+          <div style="font-size:12px;margin-top:5px;">${p.name}</div>
+        `;
         list.appendChild(div);
       });
     }
 
+    // ==========================================================
+    // ЧАТ И GEMINI AI
+    // ==========================================================
     function openChat(id) {
       currentChatId = id;
-      const m = matches.find(x => x.id === id);
-      $('#chatTitle').textContent = m.name;
+      const p = matches.find(m => m.id === id);
+      $('#chatTitle').textContent = p.name;
+      $('#chatAvatar').textContent = p.emoji;
+      $('#chatAvatar').style.background = photoGradients[p.photos[0]];
       renderChat();
-      showSection('chatModal'); // Используем как модалку
       $('#chatModal').classList.add('active');
+    }
+
+    function closeModal(id) {
+      $('#' + id).classList.remove('active');
     }
 
     function renderChat() {
       const log = $('#chatLog'); log.innerHTML = '';
-      (chats[currentChatId] || []).forEach(msg => {
+      const history = chats[currentChatId] || [];
+      
+      if (history.length === 0) {
+        const intro = document.createElement('div');
+        intro.style.textAlign = 'center'; intro.style.opacity = '0.5'; intro.style.fontSize = '12px'; intro.style.marginBottom = '20px';
+        intro.textContent = 'Вы образовали пару! Скажите привет 👋';
+        log.appendChild(intro);
+      }
+
+      history.forEach(msg => {
         const div = document.createElement('div');
         div.className = 'msg ' + (msg.me ? 'me' : 'other');
         div.textContent = msg.text;
@@ -259,60 +313,105 @@
       const text = input.value.trim();
       if (!text || !currentChatId) return;
 
-      chats[currentChatId].push({ me: true, text });
+      // 1. Добавляем сообщение пользователя
+      chats[currentChatId].push({ me: true, text: text });
       input.value = '';
       renderChat();
 
+      // 2. Индикатор печати
       $('#typingIndicator').style.display = 'block';
+      const chatLog = $('#chatLog'); chatLog.scrollTop = chatLog.scrollHeight;
 
-      const aiReply = await fetchOpenAI(text);
-      
+      // 3. Запрос к AI
+      const aiResponse = await fetchGeminiResponse(text);
+
+      // 4. Добавляем ответ
       $('#typingIndicator').style.display = 'none';
-      chats[currentChatId].push({ me: false, text: aiReply });
+      chats[currentChatId].push({ me: false, text: aiResponse });
       renderChat();
     }
-async function fetchOpenAI(userText) {
+
+    // 🔴 ФУНКЦИЯ ЗАПРОСА К GEMINI
+    async function fetchGeminiResponse(userText) {
       const p = matches.find(m => m.id == currentChatId);
-      const apiUrl = 'https://api.openai.com/v1/chat/completions';
-      const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
       
+      // Адрес API Gemini
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
       try {
-        const response = await fetch(proxyUrl, {
+        const response = await fetch(url, {
           method: 'POST',
           headers: {
-            'Authorization': 'Bearer ' + OPENAI_API_KEY.trim(),
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            model: "gpt-3.5-turbo",
-            messages: [
-              { role: "system", content: `Ты ${p.name}, девушка в дейтинг приложении. Отвечай мило, коротко, на языке пользователя.` },
-              { role: "user", content: userText }
-            ],
-            temperature: 0.7
+            contents: [{
+              parts: [{
+                // Промпт (Инструкция для нейросети)
+                text: `Ты девушка по имени ${p.name}, тебе ${p.age} лет. 
+                       Твой город: ${p.city}. Твое био: "${p.bio}".
+                       Ты общаешься в дейтинг-приложении с парнем.
+                       Твой характер: кокетливая, милая, но с юмором.
+                       Отвечай коротко (максимум 2 предложения). Используй эмодзи.
+                       Не будь скучной или слишком официальной.
+                       
+                       Сообщение парня: "${userText}"`
+              }]
+            }],
+            generationConfig: {
+              maxOutputTokens: 150,
+              temperature: 0.9 // Креативность
+            }
           })
         });
 
-        if (response.status === 401) {
-            return "Ошибка 401: Твой API ключ не принят. Проверь баланс OpenAI или сам ключ.";
+        const data = await response.json();
+
+        // Проверяем ошибки
+        if (data.error) {
+          console.error("Gemini Error:", data.error);
+          return "Ой, у меня телефон завис... (Проверь API ключ)";
         }
 
-        const data = await response.json();
-        return data.choices[0].message.content;
-      } catch (e) {
-        return "Интересно... расскажи еще! 😊";
+        // Возвращаем текст
+        if (data.candidates && data.candidates.length > 0) {
+          return data.candidates[0].content.parts[0].text;
+        } else {
+          return "Хмм..."; 
+        }
+
+      } catch (error) {
+        console.error("Network Error:", error);
+        return "Что-то с интернетом... Ты мне нравишься, но связь плохая! 😊";
       }
     }
-    function showSection(id) {
-      if (id === 'chatModal') return;
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      $('#' + id).classList.add('active');
+
+    // Вспомогательные функции
+    function toast(icon, text) {
+      const t = $('#toast');
+      $('#toastIcon').textContent = icon;
+      $('#toastText').textContent = text;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
+    
+    function toggleTheme() {
+      const body = document.body;
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? '' : 'dark');
     }
 
-    function closeModal(id) { $('#' + id).classList.remove('active'); }
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      $('#' + id).classList.add('active');
+      document.querySelectorAll('.nav-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.section === id);
+      });
+    }
 
-    displayProfile();
+    // Запуск
+    init();
+
   </script>
 </body>
 </html>
-
