@@ -271,36 +271,38 @@
       chats[currentChatId].push({ me: false, text: aiReply });
       renderChat();
     }
-
-    async function fetchOpenAI(userText) {
+async function fetchOpenAI(userText) {
       const p = matches.find(m => m.id == currentChatId);
       const apiUrl = 'https://api.openai.com/v1/chat/completions';
+      const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
       
       try {
-        const response = await fetch('https://corsproxy.io/?' + encodeURIComponent(apiUrl), {
+        const response = await fetch(proxyUrl, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${OPENAI_API_KEY}`
+            'Authorization': 'Bearer ' + OPENAI_API_KEY.trim(),
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             model: "gpt-3.5-turbo",
             messages: [
-              { role: "system", content: `Ты ${p.name}, девушка в дейтинг приложении. Отвечай мило и коротко.` },
+              { role: "system", content: `Ты ${p.name}, девушка в дейтинг приложении. Отвечай мило, коротко, на языке пользователя.` },
               { role: "user", content: userText }
             ],
             temperature: 0.7
           })
         });
 
-        if (!response.ok) throw new Error();
+        if (response.status === 401) {
+            return "Ошибка 401: Твой API ключ не принят. Проверь баланс OpenAI или сам ключ.";
+        }
+
         const data = await response.json();
         return data.choices[0].message.content;
       } catch (e) {
         return "Интересно... расскажи еще! 😊";
       }
     }
-
     function showSection(id) {
       if (id === 'chatModal') return;
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -313,3 +315,4 @@
   </script>
 </body>
 </html>
+
